@@ -24,10 +24,12 @@ contract Domains is ERC721URIStorage {
     mapping(string => address) public domains;
     mapping(string => string) public records;
 
+    address payable public owner;
     constructor(string memory _tld)
         payable
         ERC721("Robin Name Service", "RNS")
     {
+        owner = payable(msg.sender);
         tld = _tld;
         console.log("Name service deployed: %s", tld);
     }
@@ -85,13 +87,6 @@ contract Domains is ERC721URIStorage {
         string memory finalTokenUri = string(
             abi.encodePacked("data:application/json;base64,", json)
         );
-        console.log(
-            "\n--------------------------------------------------------"
-        );
-        console.log("Final tokenURI", finalTokenUri);
-        console.log(
-            "--------------------------------------------------------\n"
-        );
 
         _safeMint(msg.sender, newRecordId);
         _setTokenURI(newRecordId, finalTokenUri);
@@ -119,4 +114,20 @@ contract Domains is ERC721URIStorage {
     {
         return records[name];
     }
+
+    modifier onlyOwner() {
+        require(isOwner());
+        _;
+    }
+
+    function isOwner() public view returns(bool) {
+        return msg.sender == owner;
+    }
+
+    function withdraw() public onlyOwner {
+        uint amount = address(this).balance;
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Failed to withdraw Matic");
+    }
+
 }
