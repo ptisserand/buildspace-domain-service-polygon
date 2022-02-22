@@ -37,6 +37,13 @@ const main = async () => {
 
     console.log("Contract balance after withdrawal:", hre.ethers.utils.formatEther(contractBalance));
     console.log("Balance of owner after withdrawal:", hre.ethers.utils.formatEther(ownerBalance));
+
+    try {
+        txn = await domainContract.register("loki", { value: hre.ethers.utils.parseEther('1000') });
+        await txn.wait();    
+    } catch (error) {
+        console.log("Custom error:", error);
+    }
 }
 
 const runMain = async () => {
